@@ -1,23 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
+import { WeatherApiError } from "../services/weatherApi";
 import {
-  fetchCurrentWeather,
-  fetchForecastWeather,
-  WeatherApiError,
-} from "../services/weatherApi";
+  currentWeatherQueryOptions,
+  forecastWeatherQueryOptions,
+} from "./weatherQueryOptions";
 
 export function useCitySearch(city: string | null) {
   const enabled = Boolean(city && city.trim());
+  const cityKey = city ?? "";
 
   const currentQuery = useQuery({
-    queryKey: ["weather", "current", city],
-    queryFn: () => fetchCurrentWeather(city!),
+    ...currentWeatherQueryOptions(cityKey),
     enabled,
     retry: false,
   });
 
   const forecastQuery = useQuery({
-    queryKey: ["weather", "forecast", city],
-    queryFn: () => fetchForecastWeather(city!),
+    ...forecastWeatherQueryOptions(cityKey),
     enabled: enabled && currentQuery.isSuccess,
     retry: false,
   });
@@ -36,7 +35,7 @@ export function useCitySearch(city: string | null) {
 
   return {
     current: currentQuery.data,
-    forecast: forecastQuery.data,
+    forecastItems: forecastQuery.data,
     isLoading,
     isFetching,
     errorMessage,

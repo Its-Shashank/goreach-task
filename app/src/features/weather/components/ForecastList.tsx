@@ -1,41 +1,27 @@
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { colors, commonStyles } from "../../../theme/common";
-import type { ForecastPeriod } from "../types/weather";
+import type { ForecastItemUIModel } from "../types/weather";
 
 export interface ForecastListProps {
-  periods: ForecastPeriod[];
-  maxItems?: number;
+  items: ForecastItemUIModel[];
 }
 
-function formatDatetime(datetime: string): string {
-  const date = new Date(datetime.replace(" ", "T"));
-  if (Number.isNaN(date.getTime())) {
-    return datetime;
-  }
-  return date.toLocaleString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-export function ForecastList({ periods, maxItems = 8 }: ForecastListProps) {
-  const items = periods.slice(0, maxItems);
-
+export function ForecastList({ items }: ForecastListProps) {
   return (
     <View style={styles.container}>
       <Text style={commonStyles.title}>Forecast</Text>
       <FlatList
         data={items}
-        keyExtractor={(item) => item.datetime}
+        keyExtractor={(item) => item.id}
         scrollEnabled={false}
         renderItem={({ item }) => (
           <View style={styles.row}>
-            <Text style={styles.datetime}>{formatDatetime(item.datetime)}</Text>
+            <View style={styles.datetimeColumn}>
+              <Text style={styles.dayOfWeek}>{item.dayOfWeek}</Text>
+              <Text style={styles.datetime}>{item.datetimeLabel}</Text>
+            </View>
             <Text style={styles.conditions}>{item.conditions}</Text>
-            <Text style={styles.temp}>{Math.round(item.temperature)}°C</Text>
+            <Text style={styles.temp}>{item.temperature}</Text>
           </View>
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -54,10 +40,18 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     gap: 8,
   },
-  datetime: {
+  datetimeColumn: {
     flex: 1.4,
+  },
+  dayOfWeek: {
     fontSize: 13,
+    fontWeight: "600",
+    color: colors.text,
+  },
+  datetime: {
+    fontSize: 12,
     color: colors.textSecondary,
+    marginTop: 2,
   },
   conditions: {
     flex: 1,

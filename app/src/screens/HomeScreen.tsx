@@ -1,5 +1,5 @@
-import { useQueries, useQueryClient } from "@tanstack/react-query";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useLayoutEffect, useState } from "react";
 import {
   FlatList,
@@ -15,10 +15,7 @@ import {
   EmptyState,
   useSavedCities,
 } from "../features/saved-cities";
-import {
-  fetchCurrentWeather,
-  WeatherApiError,
-} from "../features/weather";
+import { useSavedCitiesWeather, WeatherApiError } from "../features/weather";
 import type { RootStackParamList } from "../types/navigation";
 import { colors, commonStyles } from "../theme/common";
 
@@ -29,6 +26,7 @@ export function HomeScreen({ navigation }: Props) {
   const { cities, isLoading: citiesLoading, removeCity, reload } =
     useSavedCities();
   const [refreshing, setRefreshing] = useState(false);
+  const weatherQueries = useSavedCitiesWeather(cities);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -43,15 +41,6 @@ export function HomeScreen({ navigation }: Props) {
       ),
     });
   }, [navigation]);
-
-  const weatherQueries = useQueries({
-    queries: cities.map((city) => ({
-      queryKey: ["weather", "current", city],
-      queryFn: () => fetchCurrentWeather(city),
-      enabled: cities.length > 0,
-      retry: false,
-    })),
-  });
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -112,7 +101,7 @@ export function HomeScreen({ navigation }: Props) {
               accessibilityLabel={`View forecast for ${item}`}
             >
               <CityWeatherRow
-                city={item}
+                cityName={item}
                 weather={query?.data}
                 isLoading={query?.isLoading || query?.isFetching}
                 errorMessage={errorMessage}
