@@ -5,7 +5,7 @@ export interface LoadingProps {
   message?: string;
 }
 
-export function Loading({ message = "Loading weather…" }: LoadingProps) {
+export function Loading({ message = "Loading…" }: LoadingProps) {
   return (
     <View style={styles.container} accessibilityRole="progressbar">
       <ActivityIndicator size="large" color={colors.primary} />

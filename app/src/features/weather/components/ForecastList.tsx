@@ -1,6 +1,6 @@
 import { FlatList, StyleSheet, Text, View } from "react-native";
+import { colors, commonStyles } from "../../../theme/common";
 import type { ForecastPeriod } from "../types/weather";
-import { colors, commonStyles } from "../theme/common";
 
 export interface ForecastListProps {
   periods: ForecastPeriod[];

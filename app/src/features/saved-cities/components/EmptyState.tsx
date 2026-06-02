@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { colors, commonStyles } from "../theme/common";
+import { colors, commonStyles } from "../../../theme/common";
 
 export interface EmptyStateProps {
   title: string;
