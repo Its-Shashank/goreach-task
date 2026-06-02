@@ -34,7 +34,7 @@ export function SearchScreen() {
   const [submittedCity, setSubmittedCity] = useState<string | null>(null);
   const { saveCity, isSaved } = useSavedCities();
 
-  const { current, forecast, isLoading, errorMessage, isNotFound } =
+  const { current, forecastItems, isLoading, errorMessage, isNotFound } =
     useCitySearch(submittedCity);
 
   useEffect(() => {
@@ -54,14 +54,14 @@ export function SearchScreen() {
   };
 
   const handleSave = async () => {
-    const cityName = current?.city ?? submittedCity;
+    const cityName = current?.cityName ?? submittedCity;
     if (!cityName) return;
     await saveCity(cityName);
   };
 
   const saved =
     submittedCity !== null &&
-    isSaved(current?.city ?? submittedCity);
+    isSaved(current?.cityName ?? submittedCity);
 
   const showSaveButton = Boolean(
     submittedCity && current && !isLoading && !errorMessage,
@@ -127,9 +127,9 @@ export function SearchScreen() {
         {showSaveButton ? (
           <>
             <CurrentWeatherCard weather={current!} />
-            {forecast ? (
+            {forecastItems && forecastItems.length > 0 ? (
               <View style={[commonStyles.card, styles.forecastCard]}>
-                <ForecastList periods={forecast.periods} />
+                <ForecastList items={forecastItems} />
               </View>
             ) : null}
           </>
