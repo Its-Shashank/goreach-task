@@ -2,8 +2,9 @@ import { API_BASE_URL } from "../../../constants/api";
 import type {
   ApiErrorBody,
   CurrentWeather,
-  ForecastWeather,
+  PaginatedForecastWeather,
 } from "../types/weather";
+import { normalizeForecastPage } from "./normalizeForecastPage";
 
 export class WeatherApiError extends Error {
   constructor(
@@ -15,8 +16,16 @@ export class WeatherApiError extends Error {
   }
 }
 
-async function fetchWeather<T>(path: string, city: string): Promise<T> {
-  const url = `${API_BASE_URL}${path}?city=${encodeURIComponent(city)}`;
+async function fetchWeather<T>(
+  path: string,
+  params: Record<string, string | number>,
+): Promise<T> {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    search.set(key, String(value));
+  }
+
+  const url = `${API_BASE_URL}${path}?${search.toString()}`;
 
   let response: Response;
   try {
@@ -39,9 +48,18 @@ async function fetchWeather<T>(path: string, city: string): Promise<T> {
 }
 
 export function fetchCurrentWeather(city: string): Promise<CurrentWeather> {
-  return fetchWeather<CurrentWeather>("/api/weather/current", city);
+  return fetchWeather<CurrentWeather>("/api/weather/current", { city });
 }
 
-export function fetchForecastWeather(city: string): Promise<ForecastWeather> {
-  return fetchWeather<ForecastWeather>("/api/weather/forecast", city);
+export async function fetchForecastWeatherPage(
+  city: string,
+  page: number,
+  limit: number,
+): Promise<PaginatedForecastWeather> {
+  const body = await fetchWeather<unknown>("/api/weather/forecast", {
+    city,
+    page,
+    limit,
+  });
+  return normalizeForecastPage(body, page, limit);
 }

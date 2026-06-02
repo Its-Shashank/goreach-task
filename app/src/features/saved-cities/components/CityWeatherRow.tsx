@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import type { SavedCityRowUIModel } from "../../weather/types/weather";
 import { colors, commonStyles } from "../../../theme/common";
 
@@ -7,7 +7,6 @@ export interface CityWeatherRowProps {
   weather?: SavedCityRowUIModel;
   isLoading?: boolean;
   errorMessage?: string;
-  onRemove?: (cityName: string) => void;
 }
 
 export function CityWeatherRow({
@@ -15,7 +14,6 @@ export function CityWeatherRow({
   weather,
   isLoading,
   errorMessage,
-  onRemove,
 }: CityWeatherRowProps) {
   return (
     <View style={[commonStyles.card, styles.row]}>
@@ -34,24 +32,13 @@ export function CityWeatherRow({
           </>
         ) : null}
       </View>
-      {onRemove ? (
-        <Pressable
-          onPress={() => onRemove(cityName)}
-          style={styles.removeButton}
-          accessibilityLabel={`Remove ${cityName}`}
-        >
-          <Text style={styles.removeText}>Remove</Text>
-        </Pressable>
-      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
+    backgroundColor: colors.surface,
   },
   content: {
     flex: 1,
@@ -71,14 +58,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.error,
     marginTop: 4,
-  },
-  removeButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  removeText: {
-    fontSize: 13,
-    color: colors.primary,
-    fontWeight: "500",
   },
 });

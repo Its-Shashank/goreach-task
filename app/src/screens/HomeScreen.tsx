@@ -1,18 +1,18 @@
+import { useIsFocused } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useLayoutEffect, useState } from "react";
+import type Swipeable from "react-native-gesture-handler/Swipeable";
+import { useCallback, useLayoutEffect, useRef } from "react";
 import {
   FlatList,
   Pressable,
-  RefreshControl,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { Loading } from "../components/Loading";
 import {
-  CityWeatherRow,
   EmptyState,
+  SwipeableCityRow,
   useSavedCities,
 } from "../features/saved-cities";
 import { useSavedCitiesWeather, WeatherApiError } from "../features/weather";
@@ -22,11 +22,18 @@ import { colors, commonStyles } from "../theme/common";
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
 export function HomeScreen({ navigation }: Props) {
-  const queryClient = useQueryClient();
-  const { cities, isLoading: citiesLoading, removeCity, reload } =
-    useSavedCities();
-  const [refreshing, setRefreshing] = useState(false);
-  const weatherQueries = useSavedCitiesWeather(cities);
+  const isFocused = useIsFocused();
+  const { cities, isLoading: citiesLoading, removeCity } = useSavedCities();
+  const { queries: weatherQueries, isRefetching, refetch } =
+    useSavedCitiesWeather(cities, isFocused);
+  const openSwipeableRef = useRef<Swipeable | null>(null);
+
+  const handleSwipeBegin = useCallback((active: Swipeable) => {
+    if (openSwipeableRef.current && openSwipeableRef.current !== active) {
+      openSwipeableRef.current.close();
+    }
+    openSwipeableRef.current = active;
+  }, []);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -41,13 +48,6 @@ export function HomeScreen({ navigation }: Props) {
       ),
     });
   }, [navigation]);
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await reload();
-    await queryClient.refetchQueries({ queryKey: ["weather", "current"] });
-    setRefreshing(false);
-  }, [reload, queryClient]);
 
   if (citiesLoading) {
     return (
@@ -77,12 +77,12 @@ export function HomeScreen({ navigation }: Props) {
   return (
     <View style={commonStyles.screen}>
       <FlatList
+        style={styles.list}
         data={cities}
         keyExtractor={(item) => item}
-        contentContainerStyle={styles.list}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+        contentContainerStyle={styles.listContent}
+        refreshing={isRefetching}
+        onRefresh={refetch}
         renderItem={({ item, index }) => {
           const query = weatherQueries[index];
           const errorMessage =
@@ -93,21 +93,17 @@ export function HomeScreen({ navigation }: Props) {
                 : undefined;
 
           return (
-            <Pressable
+            <SwipeableCityRow
+              cityName={item}
+              weather={query?.data}
+              isLoading={query?.isLoading || query?.isFetching}
+              errorMessage={errorMessage}
               onPress={() =>
                 navigation.navigate("Search", { cityName: item })
               }
-              accessibilityRole="button"
-              accessibilityLabel={`View forecast for ${item}`}
-            >
-              <CityWeatherRow
-                cityName={item}
-                weather={query?.data}
-                isLoading={query?.isLoading || query?.isFetching}
-                errorMessage={errorMessage}
-                onRemove={removeCity}
-              />
-            </Pressable>
+              onDelete={removeCity}
+              onSwipeBegin={handleSwipeBegin}
+            />
           );
         }}
       />
@@ -117,6 +113,10 @@ export function HomeScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   list: {
+    flex: 1,
+  },
+  listContent: {
+    flexGrow: 1,
     padding: 16,
   },
   headerButton: {

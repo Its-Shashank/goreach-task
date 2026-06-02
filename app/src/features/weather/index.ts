@@ -1,14 +1,15 @@
 export { CurrentWeatherCard } from "./components/CurrentWeatherCard";
 export { ForecastList } from "./components/ForecastList";
-export { useCitySearch } from "./hooks/useCitySearch";
+export { useCitySearch, type CitySearchResult } from "./hooks/useCitySearch";
 export { useSavedCitiesWeather } from "./hooks/useSavedCitiesWeather";
 export {
   currentWeatherQueryOptions,
-  forecastWeatherQueryOptions,
+  forecastInfiniteQueryOptions,
+  FORECAST_PAGE_SIZE,
 } from "./hooks/weatherQueryOptions";
 export {
   fetchCurrentWeather,
-  fetchForecastWeather,
+  fetchForecastWeatherPage,
   WeatherApiError,
 } from "./services/weatherApi";
 export type {
@@ -16,8 +17,10 @@ export type {
   CurrentWeather,
   CurrentWeatherUIModel,
   ForecastItemUIModel,
+  ForecastPagination,
   ForecastPeriod,
   ForecastWeather,
+  PaginatedForecastWeather,
   SavedCityRowUIModel,
   Wind,
 } from "./types/weather";

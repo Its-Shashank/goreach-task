@@ -37,10 +37,14 @@ async function fetchFromOpenWeather<T>(
   url.searchParams.set("appid", getApiKey());
   url.searchParams.set("units", "metric");
 
+  const logPrefix = `[OpenWeather] ${path} city="${city}"`;
+  console.log(`${logPrefix} -> requesting`);
+
   let response: Response;
   try {
     response = await fetch(url);
   } catch {
+    console.error(`${logPrefix} -> network error`);
     throw new OpenWeatherServiceError("Failed to reach weather service");
   }
 
@@ -55,13 +59,16 @@ async function fetchFromOpenWeather<T>(
   const cod = Number(errorBody.cod);
 
   if (response.status === 404 || cod === 404) {
+    console.warn(`${logPrefix} -> 404 not found`);
     throw new CityNotFoundError();
   }
 
   if (!response.ok) {
+    console.error(`${logPrefix} -> HTTP ${response.status}`);
     throw new OpenWeatherServiceError();
   }
 
+  console.log(`${logPrefix} -> HTTP ${response.status} ok`);
   return body as T;
 }
 

@@ -26,9 +26,17 @@ function normalizeCity(city: string): string {
   return city.trim();
 }
 
+function citiesMatch(a: string, b: string): boolean {
+  return normalizeCity(a).toLowerCase() === normalizeCity(b).toLowerCase();
+}
+
 export function SavedCitiesProvider({ children }: { children: ReactNode }) {
   const [cities, setCities] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const persist = useCallback((next: string[]) => {
+    void AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  }, []);
 
   const reload = useCallback(async () => {
     const stored = await AsyncStorage.getItem(STORAGE_KEY);
@@ -48,31 +56,34 @@ export function SavedCitiesProvider({ children }: { children: ReactNode }) {
     reload().finally(() => setIsLoading(false));
   }, [reload]);
 
-  const saveCity = useCallback(async (city: string) => {
-    const normalized = normalizeCity(city);
-    if (!normalized) return;
+  const saveCity = useCallback(
+    async (city: string) => {
+      const normalized = normalizeCity(city);
+      if (!normalized) return;
 
-    setCities((current) => {
-      const exists = current.some(
-        (c) => c.toLowerCase() === normalized.toLowerCase(),
-      );
-      if (exists) return current;
-      const next = [...current, normalized];
-      void AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      return next;
-    });
-  }, []);
+      setCities((current) => {
+        if (current.some((c) => citiesMatch(c, normalized))) {
+          return current;
+        }
+        const next = [...current, normalized];
+        persist(next);
+        return next;
+      });
+    },
+    [persist],
+  );
 
-  const removeCity = useCallback(async (city: string) => {
-    const normalized = normalizeCity(city);
-    setCities((current) => {
-      const next = current.filter(
-        (c) => c.toLowerCase() !== normalized.toLowerCase(),
-      );
-      void AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      return next;
-    });
-  }, []);
+  const removeCity = useCallback(
+    async (city: string) => {
+      const normalized = normalizeCity(city);
+      setCities((current) => {
+        const next = current.filter((c) => !citiesMatch(c, normalized));
+        persist(next);
+        return next;
+      });
+    },
+    [persist],
+  );
 
   const isSaved = useCallback(
     (city: string) => {
@@ -83,7 +94,14 @@ export function SavedCitiesProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ cities, isLoading, saveCity, removeCity, reload, isSaved }),
+    () => ({
+      cities,
+      isLoading,
+      saveCity,
+      removeCity,
+      reload,
+      isSaved,
+    }),
     [cities, isLoading, saveCity, removeCity, reload, isSaved],
   );
 

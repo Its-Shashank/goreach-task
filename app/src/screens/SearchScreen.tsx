@@ -1,6 +1,6 @@
 import type { RouteProp } from "@react-navigation/native";
-import { useRoute } from "@react-navigation/native";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRoute } from "@react-navigation/native";
+import { useCallback, useState } from "react";
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -34,17 +34,35 @@ export function SearchScreen() {
   const [submittedCity, setSubmittedCity] = useState<string | null>(null);
   const { saveCity, isSaved } = useSavedCities();
 
-  const { current, forecastItems, isLoading, errorMessage, isNotFound } =
-    useCitySearch(submittedCity);
+  const {
+    current,
+    forecastItems,
+    isLoading,
+    isLoadingCurrent,
+    isLoadingForecast,
+    errorMessage,
+    forecastErrorMessage,
+    isNotFound,
+    fetchNextForecastPage,
+    hasNextForecastPage,
+    isFetchingNextForecastPage,
+  } = useCitySearch(submittedCity);
 
-  useEffect(() => {
-    const cityName = route.params?.cityName?.trim();
-    if (!cityName) return;
+  useFocusEffect(
+    useCallback(() => {
+      const cityName = route.params?.cityName?.trim() ?? null;
 
-    setInput(cityName);
-    setSubmittedCity(cityName);
-    Keyboard.dismiss();
-  }, [route.params?.cityName]);
+      if (cityName) {
+        setInput(cityName);
+        setSubmittedCity(cityName);
+      } else {
+        setInput("");
+        setSubmittedCity(null);
+      }
+
+      Keyboard.dismiss();
+    }, [route.params?.cityName]),
+  );
 
   const handleSubmit = () => {
     const trimmed = input.trim();
@@ -63,8 +81,69 @@ export function SearchScreen() {
     submittedCity !== null &&
     isSaved(current?.cityName ?? submittedCity);
 
-  const showSaveButton = Boolean(
-    submittedCity && current && !isLoading && !errorMessage,
+  const showResults = Boolean(
+    submittedCity && current && !isLoadingCurrent && !errorMessage,
+  );
+
+  const searchHeader = (
+    <View style={styles.headerBlock}>
+      <View style={styles.searchRow}>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter city name"
+          placeholderTextColor={colors.textSecondary}
+          value={input}
+          onChangeText={setInput}
+          onSubmitEditing={handleSubmit}
+          blurOnSubmit={false}
+          returnKeyType="search"
+          autoCapitalize="words"
+          autoCorrect={false}
+        />
+        <Pressable
+          style={[
+            commonStyles.primaryButton,
+            styles.searchButton,
+            !input.trim() && styles.buttonDisabled,
+          ]}
+          onPress={handleSubmit}
+          disabled={!input.trim()}
+        >
+          <Text style={commonStyles.primaryButtonText}>Go</Text>
+        </Pressable>
+      </View>
+
+      {!submittedCity ? (
+        <Text style={commonStyles.subtitle}>
+          Search for a city to view current weather and forecast.
+        </Text>
+      ) : null}
+
+      {submittedCity && isLoading ? (
+        <Loading message="Loading weather…" />
+      ) : null}
+
+      {submittedCity && errorMessage && !isLoading ? (
+        <Error
+          message={errorMessage}
+          hint={
+            isNotFound
+              ? "Try a different spelling or include the country code."
+              : `Make sure the server is running (cd server && npm start). API: ${API_BASE_URL}`
+          }
+        />
+      ) : null}
+
+      {showResults ? (
+        <View style={commonStyles.card}>
+          <CurrentWeatherCard weather={current!} />
+        </View>
+      ) : null}
+
+      {showResults && forecastErrorMessage ? (
+        <Error message={forecastErrorMessage} />
+      ) : null}
+    </View>
   );
 
   return (
@@ -72,71 +151,30 @@ export function SearchScreen() {
       style={commonStyles.screen}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={[
-          styles.content,
-          showSaveButton && styles.contentWithFooter,
-        ]}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.searchRow}>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter city name"
-            placeholderTextColor={colors.textSecondary}
-            value={input}
-            onChangeText={setInput}
-            onSubmitEditing={handleSubmit}
-            returnKeyType="search"
-            autoCapitalize="words"
-            autoCorrect={false}
-          />
-          <Pressable
-            style={[
-              commonStyles.primaryButton,
-              styles.searchButton,
-              !input.trim() && styles.buttonDisabled,
-            ]}
-            onPress={handleSubmit}
-            disabled={!input.trim()}
-          >
-            <Text style={commonStyles.primaryButtonText}>Go</Text>
-          </Pressable>
-        </View>
-
-        {!submittedCity ? (
-          <Text style={commonStyles.subtitle}>
-            Search for a city to view current weather and forecast.
-          </Text>
-        ) : null}
-
-        {submittedCity && isLoading ? <Loading message="Loading weather…" /> : null}
-
-        {submittedCity && errorMessage && !isLoading ? (
-          <Error
-            message={errorMessage}
-            hint={
-              isNotFound
-                ? "Try a different spelling or include the country code."
-                : `Make sure the server is running (cd server && npm start). API: ${API_BASE_URL}`
+      {showResults ? (
+        <View style={[commonStyles.card, styles.forecastCard]}>
+          <ForecastList
+            items={forecastItems}
+            header={searchHeader}
+            hasMore={hasNextForecastPage}
+            isLoadingMore={isFetchingNextForecastPage}
+            isLoadingInitial={
+              isLoadingForecast && !forecastErrorMessage
             }
+            onLoadMore={() => fetchNextForecastPage()}
           />
-        ) : null}
+        </View>
+      ) : (
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+        >
+          {searchHeader}
+        </ScrollView>
+      )}
 
-        {showSaveButton ? (
-          <>
-            <CurrentWeatherCard weather={current!} />
-            {forecastItems && forecastItems.length > 0 ? (
-              <View style={[commonStyles.card, styles.forecastCard]}>
-                <ForecastList items={forecastItems} />
-              </View>
-            ) : null}
-          </>
-        ) : null}
-      </ScrollView>
-
-      {showSaveButton ? (
+      {showResults ? (
         <View
           style={[
             styles.stickyFooter,
@@ -169,8 +207,8 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 32,
   },
-  contentWithFooter: {
-    paddingBottom: 100,
+  headerBlock: {
+    gap: 0,
   },
   stickyFooter: {
     paddingHorizontal: 16,
@@ -200,7 +238,11 @@ const styles = StyleSheet.create({
     minWidth: 56,
   },
   forecastCard: {
-    marginBottom: 16,
+    flex: 1,
+    marginHorizontal: 16,
+    marginTop: 0,
+    marginBottom: 0,
+    overflow: "hidden",
   },
   buttonDisabled: {
     opacity: 0.5,

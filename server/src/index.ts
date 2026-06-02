@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import { requestLogger } from "./middleware/requestLogger.js";
 import weatherRouter from "./routes/weather.js";
 
 const app = express();
@@ -16,6 +17,8 @@ app.use((_req, res, next) => {
   }
   next();
 });
+
+app.use(requestLogger);
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });

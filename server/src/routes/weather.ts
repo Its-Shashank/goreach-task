@@ -1,12 +1,13 @@
 import { Router, type Request, type Response } from "express";
-import { mapCurrentWeather, mapForecastWeather } from "../mappers/weather.js";
+import { mapCurrentWeather } from "../mappers/weather.js";
+import { getForecastForCity } from "../services/forecastCache.js";
 import {
   CityNotFoundError,
   fetchCurrentWeather,
-  fetchForecastWeather,
   OpenWeatherServiceError,
 } from "../services/openWeather.js";
 import type { ErrorResponse } from "../types/weather.js";
+import { getPaginationParams, paginateSlice } from "../utils/pagination.js";
 
 const router = Router();
 
@@ -72,9 +73,18 @@ router.get("/forecast", async (req, res) => {
     return;
   }
 
+  const { page, limit } = getPaginationParams(req.query);
+
   await handleWeatherRequest(res, async () => {
-    const raw = await fetchForecastWeather(city);
-    return mapForecastWeather(raw);
+    const forecast = await getForecastForCity(city);
+    const { items, pagination } = paginateSlice(forecast.periods, page, limit);
+
+    return {
+      city: forecast.city,
+      country: forecast.country,
+      periods: items,
+      pagination,
+    };
   });
 });
 
