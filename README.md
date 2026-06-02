@@ -6,6 +6,32 @@ The architecture focuses strictly on type safety, clean separation of concerns, 
 
 ---
 
+## Screenshots
+
+### Home — Saved Cities
+
+Browse saved locations with live temperature, conditions, and humidity. Pull to refresh, or tap a city to open its forecast.
+
+![Home screen showing saved cities with current weather](docs/screenshots/home-saved-cities.png)
+
+Swipe left on a row to reveal delete.
+
+![Home screen with swipe-to-delete on a saved city](docs/screenshots/home-swipe-delete.png)
+
+### Search — City Lookup
+
+Search for any city to view current weather and an 8-period forecast. Save cities to the Home list from here.
+
+![Empty search screen](docs/screenshots/search-empty.png)
+
+![Search results for Mangalore with current weather, forecast, and save confirmation](docs/screenshots/search-weather-details.png)
+
+Invalid or misspelled cities show a clear, actionable error.
+
+![Search error when city is not found](docs/screenshots/search-city-not-found.png)
+
+---
+
 ## Architectural Highlights & Decisions
 
 ### 1. The BFF (Backend-For-Frontend) Pattern
