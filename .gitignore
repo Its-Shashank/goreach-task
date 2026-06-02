@@ -1,0 +1,13 @@
+node_modules/
+.env
+
+# iOS / Android
+**/ios/build/
+**/android/build/
+**/android/.gradle/
+**/android/app/build/
+
+# Expo
+.expo/
+dist/
+web-build/
