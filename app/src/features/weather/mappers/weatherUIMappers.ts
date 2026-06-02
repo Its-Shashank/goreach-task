@@ -3,11 +3,13 @@ import type {
   CurrentWeatherUIModel,
   ForecastItemUIModel,
   ForecastPeriod,
+  ForecastWeather,
   SavedCityRowUIModel,
 } from "../types/weather";
 
 const FALLBACK_LABEL = "—";
 const FALLBACK_CONDITIONS = "Unknown";
+const FORECAST_DEFAULT_MAX_ITEMS = 8;
 
 function degreesToCompass(degrees: number): string {
   if (!Number.isFinite(degrees)) {
@@ -126,8 +128,10 @@ export function mapCurrentWeatherToRowUI(
   };
 }
 
-export function mapForecastPeriodsToUI(
-  periods: ForecastPeriod[],
+export function mapForecastWeatherToUI(
+  forecast: ForecastWeather,
+  maxItems = FORECAST_DEFAULT_MAX_ITEMS,
 ): ForecastItemUIModel[] {
-  return periods.map(mapForecastPeriodToUI);
+  const periods = Array.isArray(forecast.periods) ? forecast.periods : [];
+  return periods.slice(0, maxItems).map(mapForecastPeriodToUI);
 }

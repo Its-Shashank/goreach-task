@@ -1,7 +1,10 @@
-import { fetchCurrentWeather, fetchForecastWeatherPage } from "../services/weatherApi";
-import { mapCurrentWeatherToUI } from "../mappers/weatherUIMappers";
+import { fetchCurrentWeather, fetchForecastWeather } from "../services/weatherApi";
+import {
+  mapCurrentWeatherToUI,
+  mapForecastWeatherToUI,
+} from "../mappers/weatherUIMappers";
 
-export const FORECAST_PAGE_SIZE = 8;
+export const FORECAST_UI_MAX_ITEMS = 8;
 
 export function currentWeatherQueryOptions(city: string) {
   return {
@@ -11,20 +14,11 @@ export function currentWeatherQueryOptions(city: string) {
   };
 }
 
-export function forecastInfiniteQueryOptions(city: string) {
+export function forecastWeatherQueryOptions(city: string) {
   return {
-    queryKey: ["weather", "forecast", "infinite", city] as const,
-    queryFn: ({ pageParam }: { pageParam: number }) =>
-      fetchForecastWeatherPage(city, pageParam, FORECAST_PAGE_SIZE),
-    initialPageParam: 1,
-    getNextPageParam: (
-      lastPage: Awaited<ReturnType<typeof fetchForecastWeatherPage>>,
-    ) => {
-      const pagination = lastPage?.pagination;
-      if (!pagination?.hasMore) {
-        return undefined;
-      }
-      return pagination.page + 1;
-    },
+    queryKey: ["weather", "forecast", city] as const,
+    queryFn: () => fetchForecastWeather(city),
+    select: (data: Awaited<ReturnType<typeof fetchForecastWeather>>) =>
+      mapForecastWeatherToUI(data, FORECAST_UI_MAX_ITEMS),
   };
 }

@@ -2,9 +2,8 @@ import { API_BASE_URL } from "../../../constants/api";
 import type {
   ApiErrorBody,
   CurrentWeather,
-  PaginatedForecastWeather,
+  ForecastWeather,
 } from "../types/weather";
-import { normalizeForecastPage } from "./normalizeForecastPage";
 
 export class WeatherApiError extends Error {
   constructor(
@@ -51,15 +50,6 @@ export function fetchCurrentWeather(city: string): Promise<CurrentWeather> {
   return fetchWeather<CurrentWeather>("/api/weather/current", { city });
 }
 
-export async function fetchForecastWeatherPage(
-  city: string,
-  page: number,
-  limit: number,
-): Promise<PaginatedForecastWeather> {
-  const body = await fetchWeather<unknown>("/api/weather/forecast", {
-    city,
-    page,
-    limit,
-  });
-  return normalizeForecastPage(body, page, limit);
+export function fetchForecastWeather(city: string): Promise<ForecastWeather> {
+  return fetchWeather<ForecastWeather>("/api/weather/forecast", { city });
 }

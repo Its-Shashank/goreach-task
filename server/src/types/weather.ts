@@ -28,20 +28,6 @@ export interface ForecastWeather {
   periods: ForecastPeriod[];
 }
 
-export interface ForecastPagination {
-  page: number;
-  limit: number;
-  total: number;
-  hasMore: boolean;
-}
-
-export interface PaginatedForecastWeather {
-  city: string;
-  country: string;
-  periods: ForecastPeriod[];
-  pagination: ForecastPagination;
-}
-
 export interface ErrorResponse {
   error: string;
 }

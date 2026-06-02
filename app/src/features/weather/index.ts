@@ -4,12 +4,12 @@ export { useCitySearch, type CitySearchResult } from "./hooks/useCitySearch";
 export { useSavedCitiesWeather } from "./hooks/useSavedCitiesWeather";
 export {
   currentWeatherQueryOptions,
-  forecastInfiniteQueryOptions,
-  FORECAST_PAGE_SIZE,
+  forecastWeatherQueryOptions,
+  FORECAST_UI_MAX_ITEMS,
 } from "./hooks/weatherQueryOptions";
 export {
   fetchCurrentWeather,
-  fetchForecastWeatherPage,
+  fetchForecastWeather,
   WeatherApiError,
 } from "./services/weatherApi";
 export type {
@@ -17,10 +17,8 @@ export type {
   CurrentWeather,
   CurrentWeatherUIModel,
   ForecastItemUIModel,
-  ForecastPagination,
   ForecastPeriod,
   ForecastWeather,
-  PaginatedForecastWeather,
   SavedCityRowUIModel,
   Wind,
 } from "./types/weather";

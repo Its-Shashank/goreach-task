@@ -1,11 +1,9 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
-import { mapForecastPeriodsToUI } from "../mappers/weatherUIMappers";
+import { useQuery } from "@tanstack/react-query";
 import { WeatherApiError } from "../services/weatherApi";
 import type { CurrentWeatherUIModel, ForecastItemUIModel } from "../types/weather";
 import {
   currentWeatherQueryOptions,
-  forecastInfiniteQueryOptions,
+  forecastWeatherQueryOptions,
 } from "./weatherQueryOptions";
 
 export interface CitySearchResult {
@@ -36,32 +34,17 @@ export function useCitySearch(city: string | null) {
   const currentReady =
     currentQuery.isSuccess || Boolean(currentQuery.data);
 
-  const forecastQuery = useInfiniteQuery({
-    ...forecastInfiniteQueryOptions(trimmedCity),
+  const forecastQuery = useQuery({
+    ...forecastWeatherQueryOptions(trimmedCity),
     enabled: enabled && currentReady,
     retry: false,
   });
 
-  const forecastItems = useMemo(
-    () =>
-      forecastQuery.data?.pages.flatMap((page) =>
-        mapForecastPeriodsToUI(page?.periods ?? []),
-      ) ?? [],
-    [forecastQuery.data],
-  );
-
   const error = currentQuery.error ?? forecastQuery.error;
-  const forecastError =
-    !forecastQuery.isPending && !forecastQuery.isFetching
-      ? forecastQuery.error
-      : null;
 
   const isLoadingCurrent = currentQuery.isPending;
   const isLoadingForecast =
-    currentReady &&
-    forecastQuery.isPending &&
-    forecastItems.length === 0 &&
-    !forecastError;
+    currentReady && forecastQuery.isPending && !forecastQuery.data;
 
   const isLoading = isLoadingCurrent || isLoadingForecast;
 
@@ -73,17 +56,13 @@ export function useCitySearch(city: string | null) {
 
   return {
     current: currentQuery.data,
-    forecastItems,
+    forecastItems: forecastQuery.data,
     isLoading,
     isLoadingCurrent,
     isLoadingForecast,
     isFetching,
     errorMessage: getErrorMessage(error),
-    forecastErrorMessage: getErrorMessage(forecastError),
     isNotFound: error instanceof WeatherApiError && error.status === 404,
     refetch,
-    fetchNextForecastPage: forecastQuery.fetchNextPage,
-    hasNextForecastPage: forecastQuery.hasNextPage ?? false,
-    isFetchingNextForecastPage: forecastQuery.isFetchingNextPage,
   };
 }
