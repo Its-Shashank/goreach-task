@@ -3,7 +3,7 @@ import {
   fetchCurrentWeather,
   fetchForecastWeather,
   WeatherApiError,
-} from "../api/weatherApi";
+} from "../services/weatherApi";
 
 export function useCitySearch(city: string | null) {
   const enabled = Boolean(city && city.trim());

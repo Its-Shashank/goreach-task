@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import type { CurrentWeather } from "../types/weather";
-import { colors, commonStyles } from "../theme/common";
+import type { CurrentWeather } from "../../weather/types/weather";
+import { colors, commonStyles } from "../../../theme/common";
 
 export interface CityWeatherRowProps {
   city: string;

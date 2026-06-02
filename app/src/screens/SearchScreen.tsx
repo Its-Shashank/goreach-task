@@ -12,16 +12,18 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { CurrentWeatherCard } from "../components/CurrentWeatherCard";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Error } from "../components/Error";
-import { ForecastList } from "../components/ForecastList";
 import { Loading } from "../components/Loading";
 import { API_BASE_URL } from "../constants/api";
-import { useCitySearch } from "../hooks/useCitySearch";
-import { useSavedCities } from "../hooks/useSavedCities";
+import { useSavedCities } from "../features/saved-cities";
+import {
+  CurrentWeatherCard,
+  ForecastList,
+  useCitySearch,
+} from "../features/weather";
 import type { RootStackParamList } from "../types/navigation";
 import { colors, commonStyles } from "../theme/common";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type SearchScreenRouteProp = RouteProp<RootStackParamList, "Search">;
 
@@ -109,7 +111,7 @@ export function SearchScreen() {
           </Text>
         ) : null}
 
-        {submittedCity && isLoading ? <Loading /> : null}
+        {submittedCity && isLoading ? <Loading message="Loading weather…" /> : null}
 
         {submittedCity && errorMessage && !isLoading ? (
           <Error

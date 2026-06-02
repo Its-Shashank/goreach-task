@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
+import { commonStyles } from "../../../theme/common";
 import type { CurrentWeather } from "../types/weather";
-import { commonStyles } from "../theme/common";
 
 export interface CurrentWeatherCardProps {
   weather: CurrentWeather;

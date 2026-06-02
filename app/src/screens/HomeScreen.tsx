@@ -9,11 +9,16 @@ import {
   Text,
   View,
 } from "react-native";
-import { fetchCurrentWeather, WeatherApiError } from "../api/weatherApi";
-import { CityWeatherRow } from "../components/CityWeatherRow";
-import { EmptyState } from "../components/EmptyState";
 import { Loading } from "../components/Loading";
-import { useSavedCities } from "../hooks/useSavedCities";
+import {
+  CityWeatherRow,
+  EmptyState,
+  useSavedCities,
+} from "../features/saved-cities";
+import {
+  fetchCurrentWeather,
+  WeatherApiError,
+} from "../features/weather";
 import type { RootStackParamList } from "../types/navigation";
 import { colors, commonStyles } from "../theme/common";
 

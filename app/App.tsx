@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
-import { SavedCitiesProvider } from "./src/hooks/useSavedCities";
+import { SavedCitiesProvider } from "./src/features/saved-cities";
 import { RootNavigator } from "./src/navigation/RootNavigator";
 
 export default function App() {
